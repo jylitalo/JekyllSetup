@@ -1,0 +1,3 @@
+---
+blog_dir: "{{role_path}}/files/blog"
+colorbox_dir: "{{role_path}}/files/colorbox"

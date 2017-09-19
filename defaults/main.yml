@@ -1,0 +1,6 @@
+content_repo: "invalid"
+images_dir: "{{playbook_dir}}/images"
+override_dir: "{{playbook_dir}}/files/override"
+colorbox_theme: "example4"
+colorbox_i18n: ["fi"]
+
