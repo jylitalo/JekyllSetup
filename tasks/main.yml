@@ -34,6 +34,7 @@
   - Gemfile
   - Gemfile.lock
   - _config.yml
+  - _includes
   - _layouts
   - _sass
   - _site
