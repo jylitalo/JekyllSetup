@@ -103,6 +103,7 @@
     dest: "{{blog_dir}}/{{item}}"
     state: link
   with_items:
+  - _includes
   - _layouts
   - _sass
   - assets
