@@ -36,10 +36,12 @@
   - _config.yml
   - _layouts
   - _sass
+  - _site
   - assets
   - img
   - index.md
   - js
+  - .sass-cache
 ###
 # setup blog with jekyll
 ###
