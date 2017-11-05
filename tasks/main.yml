@@ -5,9 +5,9 @@
   gem: name={{item}} state=present
   with_items:
   - bundler
-- name: install gems
-  shell: bundle install
-  args:
+- name: run bundler
+  bundler:
+    state: present
     chdir: "{{override_dir}}"
 - name: git update
   git: repo={{item.repo}} dest={{item.dest}} update=yes
