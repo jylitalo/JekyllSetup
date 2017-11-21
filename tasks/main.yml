@@ -1,8 +1,17 @@
 ###
 # setup
 ###
+- name: "{{override_dir}} has to exist"
+  file: name="{{override_dir}}" state=directory
+- name: "{{override_dir}}/Gemfile has to exist"
+  copy:
+    src: "{{role_path}}/files/Gemfile"
+    dest: "{{override_dir}}/Gemfile"
+    force: no
 - name: install bundler
-  gem: name={{item}} state=present
+  gem:
+    name: "{{item}}"
+    state: present
   with_items:
   - bundler
 - name: run bundler
@@ -10,13 +19,20 @@
     state: present
     chdir: "{{override_dir}}"
 - name: git update
-  git: repo={{item.repo}} dest={{item.dest}} update=yes
+  git: repo="{{item.repo}}" dest="{{item.dest}}" update=yes
   with_items:
   - { repo: "git@github.com:jackmoore/colorbox.git", dest: "{{colorbox_dir}}" }
   - { repo: "{{content_repo}}", dest: "{{blog_dir}}" }
+  tags:
+  - skip_ansible_lint
 ###
 # .gitignore
 ###
+- name: "Ensure that .gitignore files exists"
+  file: name="{{item}}/.gitignore" state=touch
+  with_items:
+  - "{{role_path}}"
+  - "{{blog_dir}}"
 - name: "add items to .gitignore"
   lineinfile:
     name: "{{role_path}}/.gitignore"
@@ -34,32 +50,31 @@
   - Gemfile
   - Gemfile.lock
   - _config.yml
-  - _includes
-  - _layouts
-  - _sass
   - _site
-  - assets
   - img
   - index.md
   - js
   - .sass-cache
+- name: .gitignore for override content
+  lineinfile:
+    name: "{{blog_dir}}/.gitignore"
+    regexp: "^{{item}}$"
+    line: "{{item}}"
+  with_items: "{{dirs_in_override}}"
 ###
 # setup blog with jekyll
 ###
-- name: "{{blog_dir}} exists?"
-  stat: path={{blog_dir}}/_posts
-  register: jekyll_done
 - name: create site
   shell: "jekyll new blog"
   args:
     chdir: "{{role_path}}/files"
-  when: not jekyll_done.stat.exists
-- name: clean extra files from jenkins new
+    creates: "{{blog_dir}}/_posts"
+  tags:
+  - skip_ansible_lint
+- name: clean extra files from jekyll new
   file: path="{{item}}" state=absent
   with_fileglob:
-  - "{{blog_dir}}/about.md"
   - "{{blog_dir}}/_posts/*-welcome-to-jekyll.markdown"
-  when: not jekyll_done.stat.exists
 ###
 # Colorbox
 ###
@@ -98,18 +113,22 @@
   file: src="{{item}}" dest="{{blog_dir}}/{{item | basename}}" state=link
   with_fileglob:
   - "{{override_dir}}/*"
+- name: "override dirs must exist"
+  file:
+    name: "{{override_dir}}/{{item}}"
+    state: directory
+  with_items: "{{dirs_in_override}}"
 - name: "override with {{site}} (sync)"
   file:
     src: "{{override_dir}}/{{item}}"
     dest: "{{blog_dir}}/{{item}}"
     state: link
-  with_items:
-  - _includes
-  - _layouts
-  - _sass
-  - assets
+  with_items: "{{dirs_in_override}}"
 ###
 #  link with playbook_dir
+###
+- name: "{{playbook_dir}}/images has to exist"
+  file: name="{{playbook_dir}}/images" state=directory
 - name: "link with playbook_dir"
   file: src="{{item.src}}" dest="{{item.dest}}" state=link
   with_items:
@@ -123,3 +142,5 @@
   shell: "jekyll build"
   args:
     chdir: "{{blog_dir}}"
+  tags:
+  - skip_ansible_lint

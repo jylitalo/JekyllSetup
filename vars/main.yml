@@ -1,3 +1,9 @@
 ---
 blog_dir: "{{role_path}}/files/blog"
 colorbox_dir: "{{role_path}}/files/colorbox"
+dirs_in_override:
+  - _includes
+  - _layouts
+  - _sass
+  - assets
+
